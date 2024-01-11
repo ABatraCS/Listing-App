@@ -1,5 +1,5 @@
 import mysql.connector
-from flask import Flask
+from flask import Flask, jsonify, request
 import json
 
 #Establish connection with "listings" db
@@ -13,26 +13,49 @@ db = mysql.connector.connect(
 clientCursor = db.cursor()
 app = Flask(__name__)
 
-#Create
+#Create a new listing
+@app.route('/listings', methods = ['POST'])
+def create_listing():
+    new_listing = request.get_json()
 
-#Read
-@app.route('/available_listings/<int:id>/get')
-def getListing(id):
+    #Fields to pass
+    user = new_listing.get('userID')
+    num_beds = new_listing.get('beds')
+    num_baths = new_listing.get('baths')
+    rent_amt = new_listing.get('rent')
+    housing_term = new_listing.get('term')
+    insert_query = "INSERT INTO available_listings (userID, beds, baths, rent, term) VALUES (%d, %d, %d, %d, %s)"
+
+    clientCursor.execute(insert_query, (user, num_beds, num_baths, rent_amt, housing_term))
+    db.commit
+
+    return jsonify({'message': 'Listing created successfully'}), 201
+
+#Get listing by listingID
+@app.route('/listings<int:id>', methods = ['GET'])
+def get_listing(id):
+
+    #Find corresponding json
     clientCursor.execute("SELECT * from available_listings WHERE listingID = %d" % id)
     row = clientCursor.fetchone()
-    result = []
-    d = {}
+    result = {}
 
     for i, col in enumerate(clientCursor.description):
-        d[col[0]] = row[i]
+        result[col[0]] = row[i]
 
-    result.append(d)
+    return jsonify(result)
+    
+#Update a listing
+@app.route('/listings<int:id>', methods = ['PUT'])
 
-    return json.dumps(result)
-    
-#Update
-    
-#Delete
+#Delete a listing
+@app.route('/listings<int:id>', methods = ['DELETE'])
+def delete_listing(id):
+    delete_query = "DELETE FROM available_listings WHERE listingID = %d"
+    clientCursor.execute(delete_query, (id))
+    db.commit()
+
+    return jsonify({'message' : 'Listing deleted successfully'})
 
 if __name__ == '__main__':
     app.run(debug = True)
