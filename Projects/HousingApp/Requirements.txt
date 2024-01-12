@@ -2,3 +2,27 @@ MySQL
 MySQL Connector for Python
 Flask
 JSON
+
+-----PREVIOUS CODE-----
+#Post
+@app.route('/listings', methods = ['POST'])
+def post_listing():
+    
+#Get
+@app.route('/listings/<int:id>', methods = ['GET', 'PUT'])
+def getListing(id):
+    clientCursor.execute("SELECT * from available_listings WHERE listingID = %d" % id)
+    row = clientCursor.fetchone()
+
+    if request.method == 'GET':
+        result = {}
+
+        for i, col in enumerate(clientCursor.description):
+            result[col[0]] = row[i]
+
+        return jsonify(result)
+    elif request.method == 'POST'
+    
+#Put
+@app.route('/listings/<int:id>')
+#Delete

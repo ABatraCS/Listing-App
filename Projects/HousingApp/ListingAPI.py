@@ -34,9 +34,9 @@ def create_listing():
 #Get listing by listingID
 @app.route('/listings<int:id>', methods = ['GET'])
 def get_listing(id):
-
     #Find corresponding json
-    clientCursor.execute("SELECT * from available_listings WHERE listingID = %d" % id)
+    get_query = "SELECT * from available_listings WHERE listingID = %d"
+    clientCursor.execute(get_query, (id))
     row = clientCursor.fetchone()
     result = {}
 
@@ -47,6 +47,18 @@ def get_listing(id):
     
 #Update a listing
 @app.route('/listings<int:id>', methods = ['PUT'])
+def update_listing(id):
+    updated_listing = request.get_json()
+    num_beds = updated_listing.get('beds')
+    num_baths = updated_listing.get('baths')
+    rent_amt = updated_listing.get('rent')
+    housing_term = updated_listing.get('term')
+    update_query = "UPDATE available_listings SET beds = %d, baths = %d, rent = %d, term = %s"
+
+    clientCursor.execute(update_query, (num_beds, num_baths, rent_amt, housing_term))
+    db.commit()
+
+    return jsonify({'message': 'Listing updated successfully'})
 
 #Delete a listing
 @app.route('/listings<int:id>', methods = ['DELETE'])
